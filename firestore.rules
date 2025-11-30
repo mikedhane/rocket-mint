@@ -1,0 +1,16 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow public read access to launches collection
+    match /launches/{launchId} {
+      allow read: if true;  // Anyone can read launches
+      allow write: if false; // Only server (Firebase Admin) can write
+    }
+
+    // Block all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
