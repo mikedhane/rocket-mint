@@ -44,6 +44,18 @@ export async function GET(request: NextRequest) {
 
     const data = userDoc.data();
 
+    if (!data) {
+      return NextResponse.json({
+        totalEarned: 0,
+        level1Count: 0,
+        level2Count: 0,
+        level3Count: 0,
+        level1Earnings: 0,
+        level2Earnings: 0,
+        level3Earnings: 0,
+      });
+    }
+
     return NextResponse.json({
       totalEarned: data.totalEarned || 0,
       level1Count: data.level1?.length || 0,
