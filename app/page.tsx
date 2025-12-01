@@ -45,6 +45,13 @@ export default function HomePage() {
 
   useEffect(() => {
     setMounted(true);
+
+    // Capture referral code from URL
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get("ref");
+    if (refCode) {
+      localStorage.setItem("referralCode", refCode);
+    }
   }, []);
 
   // Fetch SOL price in USD
@@ -168,6 +175,35 @@ export default function HomePage() {
       }
     })();
   }, [mounted, publicKey, connection]);
+
+  // Register user with referral code when wallet connects
+  useEffect(() => {
+    if (!mounted || !publicKey) return;
+
+    const registerUser = async () => {
+      try {
+        const referralCode = localStorage.getItem("referralCode");
+
+        await fetch("/api/referrals/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            wallet: publicKey.toBase58(),
+            referrerCode: referralCode || undefined,
+          }),
+        });
+
+        // Clean up the referral code after registration
+        if (referralCode) {
+          localStorage.removeItem("referralCode");
+        }
+      } catch (error) {
+        console.error("Error registering user:", error);
+      }
+    };
+
+    registerUser();
+  }, [mounted, publicKey]);
 
   const requestAirdrop = useCallback(async () => {
     try {

@@ -25,7 +25,7 @@ export default function SourceCodePage() {
   };
 
   return (
-    <main className="min-h-screen px-6 py-10 bg-gradient-to-b from-black to-zinc-900 text-white">
+    <main className="min-h-screen px-6 py-10 bg-linear-to-b from-black to-zinc-900 text-white">
       <div className="mx-auto w-full max-w-4xl">
         <div className="mb-8">
           <Link

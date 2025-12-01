@@ -25,6 +25,10 @@ import {
   calculateSolForTokens,
   lamportsToSol,
 } from "@/lib/bondingCurve";
+import {
+  distributeReferralCommissions,
+  calculateTradingFeesUSD,
+} from "@/lib/referralCommissions";
 
 type SolanaNetwork = "devnet" | "mainnet-beta" | "testnet";
 
@@ -166,6 +170,8 @@ export async function POST(req: Request) {
     const creatorPubkey = new PublicKey(data.creator);
 
     let newState: BondingCurveState;
+    let platformFeeLamports = BigInt(0);
+    let creatorFeeLamports = BigInt(0);
 
     if (mode === "buy") {
       // Buy tokens with SOL
@@ -179,6 +185,10 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
+
+      // Track fees for referral commission distribution
+      platformFeeLamports = result.platformFee;
+      creatorFeeLamports = result.creatorFee;
 
       // User pays SOL to reserve
       tx.add(
@@ -261,6 +271,10 @@ export async function POST(req: Request) {
       const tokenAmount = BigInt(Math.floor(Number(amount) * 1_000_000)); // Assuming 6 decimals
 
       const result = calculateSolForTokens(config, state, tokenAmount);
+
+      // Track fees for referral commission distribution
+      platformFeeLamports = result.platformFee;
+      creatorFeeLamports = result.creatorFee;
 
       // Transfer tokens from user to reserve
       const userAta = getAssociatedTokenAddressSync(
@@ -383,6 +397,24 @@ export async function POST(req: Request) {
       timestamp: new Date().toISOString(),
       network: network || "devnet",
     });
+
+    // Distribute referral commissions based on trading fees
+    if (platformFeeLamports > BigInt(0) || creatorFeeLamports > BigInt(0)) {
+      try {
+        const solPriceUSD = await getSolPriceUSD();
+        const totalFeesUSD = calculateTradingFeesUSD(
+          platformFeeLamports,
+          creatorFeeLamports,
+          solPriceUSD
+        );
+
+        // Distribute commissions to referrers (35%, 20%, 5%)
+        await distributeReferralCommissions(userWallet, totalFeesUSD);
+      } catch (commissionError) {
+        console.error("Error distributing referral commissions:", commissionError);
+        // Don't fail the transaction if commission distribution fails
+      }
+    }
 
     return NextResponse.json({
       ok: true,

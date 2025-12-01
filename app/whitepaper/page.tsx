@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 
 export default function WhitepaperPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
+    <main className="min-h-screen bg-linear-to-b from-zinc-950 to-zinc-900 text-white">
       <div className="max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
         {/* Back Button */}
         <Link
@@ -29,7 +29,7 @@ export default function WhitepaperPage() {
               <p className="text-zinc-400 mt-1">Technical Overview & Security Guarantees</p>
             </div>
           </div>
-          <div className="h-1 w-24 bg-gradient-to-r from-violet-600 to-emerald-500 rounded-full"></div>
+          <div className="h-1 w-24 bg-linear-to-r from-violet-600 to-emerald-500 rounded-full"></div>
         </div>
 
         {/* Executive Summary */}
@@ -217,7 +217,7 @@ const revokeFreezeAuthorityIx = createSetAuthorityInstruction(
         <section className="mb-12">
           <h2 className="text-2xl font-bold mb-4">4. Security Guarantees & Rug Pull Protection</h2>
 
-          <div className="bg-gradient-to-br from-emerald-500/10 to-violet-500/10 border border-emerald-500/30 rounded-xl p-6 mb-6">
+          <div className="bg-linear-to-br from-emerald-500/10 to-violet-500/10 border border-emerald-500/30 rounded-xl p-6 mb-6">
             <div className="flex items-start gap-3 mb-4">
               <div className="text-3xl">🔒</div>
               <div>
@@ -254,7 +254,7 @@ const revokeFreezeAuthorityIx = createSetAuthorityInstruction(
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-xl p-6">
+          <div className="bg-linear-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-xl p-6">
             <div className="flex items-start gap-3 mb-4">
               <div className="text-3xl">❄️</div>
               <div>
@@ -385,7 +385,7 @@ const revokeFreezeAuthorityIx = createSetAuthorityInstruction(
         <section className="mb-12">
           <h2 className="text-2xl font-bold mb-4">7. Open Source & Transparency</h2>
 
-          <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-xl p-6 mb-6">
+          <div className="bg-linear-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-xl p-6 mb-6">
             <div className="flex items-start gap-3 mb-4">
               <div className="text-3xl">📖</div>
               <div>
@@ -515,7 +515,7 @@ const revokeFreezeAuthorityIx = createSetAuthorityInstruction(
         <section className="mb-12">
           <h2 className="text-2xl font-bold mb-4">8. Conclusion</h2>
 
-          <div className="bg-gradient-to-br from-violet-500/10 to-emerald-500/10 border border-violet-500/30 rounded-xl p-6">
+          <div className="bg-linear-to-br from-violet-500/10 to-emerald-500/10 border border-violet-500/30 rounded-xl p-6">
             <p className="text-zinc-300 leading-relaxed mb-4">
               Rocket-Mint represents a paradigm shift in token launches on Solana. By making security features like
               mint authority burning and freeze authority revocation <strong>mandatory rather than optional</strong>,
@@ -542,7 +542,7 @@ const revokeFreezeAuthorityIx = createSetAuthorityInstruction(
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/launch"
-                className="px-8 py-3 bg-gradient-to-r from-violet-600 to-emerald-600 hover:from-violet-700 hover:to-emerald-700 rounded-lg font-semibold transition"
+                className="px-8 py-3 bg-linear-to-r from-violet-600 to-emerald-600 hover:from-violet-700 hover:to-emerald-700 rounded-lg font-semibold transition"
               >
                 Launch a Token
               </Link>

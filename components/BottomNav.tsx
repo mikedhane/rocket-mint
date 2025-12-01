@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Rocket, Wallet, TrendingUp } from "lucide-react";
+import { Home, Rocket, Wallet, Gift, TrendingUp } from "lucide-react";
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -46,6 +46,16 @@ export default function BottomNav() {
           >
             <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />
             <span className={`truncate w-full text-center ${isActive("/marketplace") ? "font-semibold" : "font-medium"}`}>Market</span>
+          </Link>
+
+          <Link
+            href="/referrals"
+            className={`flex-1 flex flex-col items-center gap-1 py-1 transition min-w-0 ${
+              isActive("/referrals") ? "text-violet-500" : "text-zinc-400 hover:text-violet-500"
+            }`}
+          >
+            <Gift className="h-5 w-5 sm:h-6 sm:w-6" />
+            <span className={`truncate w-full text-center ${isActive("/referrals") ? "font-semibold" : "font-medium"}`}>Rewards</span>
           </Link>
 
           <Link
