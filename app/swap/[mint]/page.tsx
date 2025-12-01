@@ -711,45 +711,43 @@ export default function SwapPage() {
       setStatus(`✅ Swap successful! Signature: ${sig.slice(0, 8)}...`);
       setInputAmount("");
 
-      // Refresh transaction history to update the chart and user balance
-      setTimeout(async () => {
-        try {
-          const res = await fetch(`/api/transactions?mintAddress=${mint}&limit=200`);
-          const data = await res.json();
-          if (data.transactions) {
-            setTransactions(data.transactions);
-          }
-
-          // Refresh user's token balance
-          if (publicKey) {
-            try {
-              const mintPubkey = new PublicKey(mint);
-              const userATA = getAssociatedTokenAddressSync(
-                mintPubkey,
-                publicKey,
-                false,
-                TOKEN_PROGRAM_ID
-              );
-
-              const accountInfo = await connection.getAccountInfo(userATA);
-              if (accountInfo) {
-                const tokenAccount = await getAccount(
-                  connection,
-                  userATA,
-                  "confirmed",
-                  TOKEN_PROGRAM_ID
-                );
-                const balance = Number(tokenAccount.amount) / 1_000_000;
-                setUserTokenBalance(balance);
-              }
-            } catch (balanceErr) {
-              console.error("Error refreshing balance:", balanceErr);
-            }
-          }
-        } catch (refreshErr) {
-          console.log("Chart will update on next page load");
+      // Refresh transaction history and user balance immediately
+      try {
+        const res = await fetch(`/api/transactions?mintAddress=${mint}&limit=200`);
+        const data = await res.json();
+        if (data.transactions) {
+          setTransactions(data.transactions);
         }
-      }, 1000); // Small delay to ensure transaction is recorded
+      } catch (refreshErr) {
+        console.error("Error refreshing transactions:", refreshErr);
+      }
+
+      // Refresh user's token balance
+      if (publicKey) {
+        try {
+          const mintPubkey = new PublicKey(mint);
+          const userATA = getAssociatedTokenAddressSync(
+            mintPubkey,
+            publicKey,
+            false,
+            TOKEN_PROGRAM_ID
+          );
+
+          const accountInfo = await connection.getAccountInfo(userATA);
+          if (accountInfo) {
+            const tokenAccount = await getAccount(
+              connection,
+              userATA,
+              "confirmed",
+              TOKEN_PROGRAM_ID
+            );
+            const balance = Number(tokenAccount.amount) / 1_000_000;
+            setUserTokenBalance(balance);
+          }
+        } catch (balanceErr) {
+          console.error("Error refreshing balance:", balanceErr);
+        }
+      }
     } catch (err: any) {
       console.error(err);
 
