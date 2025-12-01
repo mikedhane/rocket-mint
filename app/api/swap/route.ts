@@ -344,10 +344,10 @@ export async function POST(req: Request) {
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
     tx.recentBlockhash = blockhash;
 
-    // Reserve wallet signs (for token transfers)
-    tx.partialSign(reserveWallet);
+    // DON'T sign here - let Phantom sign first per their security guidelines
+    // We'll add reserve wallet signature after user signs
 
-    // Serialize and return for user to sign
+    // Serialize UNSIGNED transaction and return for user to sign
     const serialized = tx.serialize({
       requireAllSignatures: false,
       verifySignatures: false,

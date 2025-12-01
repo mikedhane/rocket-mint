@@ -49,7 +49,7 @@ type SolanaNetwork = "devnet" | "mainnet-beta" | "testnet";
 export default function SwapPage() {
   const params = useParams();
   const mint = params?.mint as string;
-  const { connected, publicKey, sendTransaction } = useWallet();
+  const { connected, publicKey, signTransaction } = useWallet();
 
   const [mounted, setMounted] = useState(false);
   const [tokenData, setTokenData] = useState<TokenData | null>(null);
@@ -561,7 +561,7 @@ export default function SwapPage() {
 
   const executeSwap = useCallback(async () => {
     try {
-      if (!connected || !publicKey || !sendTransaction) {
+      if (!connected || !publicKey || !signTransaction) {
         throw new Error("Connect wallet first");
       }
       if (!tokenData || !curveState || !swapPreview) {
@@ -576,7 +576,7 @@ export default function SwapPage() {
 
       setStatus("Building transaction...");
 
-      // Call server-side API to build and partially sign the transaction
+      // Call server-side API to build UNSIGNED transaction
       // For buy mode: send SOL amount
       // For sell mode: send token amount (in display units, API will convert to raw units)
       let amountToSend: string;
@@ -613,18 +613,37 @@ export default function SwapPage() {
 
       const { transaction: txBase64, blockhash, lastValidBlockHeight, newState } = await res.json();
 
-      // Deserialize the partially signed transaction
+      // Deserialize the UNSIGNED transaction
       const txBuffer = Buffer.from(txBase64, "base64");
       const tx = Transaction.from(txBuffer);
 
-      setStatus("Requesting wallet signature and sending...");
+      setStatus("Requesting wallet signature...");
 
-      // ✅ Use Phantom's secure signAndSendTransaction API
-      // This prevents spoofing warnings by keeping the entire flow within the wallet
-      const sig = await sendTransaction(tx, connection, {
-        skipPreflight: false,
-        maxRetries: 3,
+      // Step 1: Phantom wallet signs FIRST (per Phantom security guidelines)
+      const signedTx = await signTransaction(tx);
+
+      setStatus("Finalizing transaction...");
+
+      // Step 2: Send Phantom-signed transaction to backend to add reserve wallet signature
+      const finalizeRes = await fetch("/api/swap/finalize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mintAddress: mint,
+          signedTransaction: Buffer.from(signedTx.serialize({
+            requireAllSignatures: false,
+            verifySignatures: false,
+          })).toString("base64"),
+          network,
+        }),
       });
+
+      if (!finalizeRes.ok) {
+        const error = await finalizeRes.json();
+        throw new Error(error.error || "Failed to finalize swap");
+      }
+
+      const { signature: sig } = await finalizeRes.json();
 
       setStatus("Confirming...");
 
@@ -711,12 +730,25 @@ export default function SwapPage() {
       }, 1000); // Small delay to ensure transaction is recorded
     } catch (err: any) {
       console.error(err);
-      setStatus(`❌ Swap failed: ${err.message || String(err)}`);
+
+      // Better error messages for common scenarios
+      if (err.message?.includes("User rejected") || err.name === "WalletSignTransactionError") {
+        setStatus("❌ Transaction cancelled");
+      } else if (err.message?.includes("Insufficient")) {
+        setStatus(`❌ ${err.message}`);
+      } else {
+        setStatus(`❌ Swap failed: ${err.message || String(err)}`);
+      }
+
+      // Clear error after 5 seconds so user can try again
+      setTimeout(() => {
+        setStatus("");
+      }, 5000);
     }
   }, [
     connected,
     publicKey,
-    sendTransaction,
+    signTransaction,
     tokenData,
     curveState,
     swapPreview,
