@@ -611,7 +611,7 @@ export default function SwapPage() {
         throw new Error(error.error || "Swap API failed");
       }
 
-      const { transaction: txBase64, blockhash, lastValidBlockHeight, newState } = await res.json();
+      const { transaction: txBase64, blockhash, lastValidBlockHeight, newState, transactionData } = await res.json();
 
       // Deserialize the UNSIGNED transaction
       const txBuffer = Buffer.from(txBase64, "base64");
@@ -677,6 +677,28 @@ export default function SwapPage() {
         } else {
           throw confirmErr;
         }
+      }
+
+      // Record transaction AFTER confirmation
+      try {
+        await fetch("/api/swap/record", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mintAddress: mint,
+            userWallet: publicKey.toBase58(),
+            mode: swapMode,
+            price: transactionData.price,
+            tokenAmount: transactionData.tokenAmount,
+            solAmount: transactionData.solAmount,
+            platformFeeLamports: transactionData.platformFeeLamports,
+            creatorFeeLamports: transactionData.creatorFeeLamports,
+            network,
+          }),
+        });
+      } catch (recordErr) {
+        console.error("Failed to record transaction:", recordErr);
+        // Don't fail the whole swap if recording fails
       }
 
       // Update local state

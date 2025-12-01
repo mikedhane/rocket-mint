@@ -381,40 +381,10 @@ export async function POST(req: Request) {
 
     await db.collection("launches").doc(doc.id).update(updateData);
 
-    // Record transaction in history for price chart
-    // Calculate price per token from the newState
+    // Calculate transaction details to return (will be recorded AFTER confirmation)
     const tokensDelta = newState.tokensSold - state.tokensSold; // positive for buy, negative for sell
     const solDelta = newState.solCollected - state.solCollected; // positive for buy, negative for sell
     const currentPrice = Math.abs(Number(solDelta)) / Math.abs(Number(tokensDelta)) / LAMPORTS_PER_SOL * 1_000_000; // Price per token (6 decimals)
-
-    await db.collection("transactions").add({
-      mintAddress,
-      type: mode, // "buy" or "sell"
-      price: currentPrice, // Price in SOL per token
-      tokenAmount: Math.abs(Number(tokensDelta)).toString(),
-      solAmount: Math.abs(Number(solDelta)).toString(),
-      user: userWallet,
-      timestamp: new Date().toISOString(),
-      network: network || "devnet",
-    });
-
-    // Distribute referral commissions based on trading fees
-    if (platformFeeLamports > BigInt(0) || creatorFeeLamports > BigInt(0)) {
-      try {
-        const solPriceUSD = await getSolPriceUSD();
-        const totalFeesUSD = calculateTradingFeesUSD(
-          platformFeeLamports,
-          creatorFeeLamports,
-          solPriceUSD
-        );
-
-        // Distribute commissions to referrers (35%, 20%, 5%)
-        await distributeReferralCommissions(userWallet, totalFeesUSD);
-      } catch (commissionError) {
-        console.error("Error distributing referral commissions:", commissionError);
-        // Don't fail the transaction if commission distribution fails
-      }
-    }
 
     return NextResponse.json({
       ok: true,
@@ -425,6 +395,14 @@ export async function POST(req: Request) {
         tokensRemaining: newState.tokensRemaining.toString(),
         tokensSold: newState.tokensSold.toString(),
         solCollected: newState.solCollected.toString(),
+      },
+      // Transaction details for recording after confirmation
+      transactionData: {
+        price: currentPrice,
+        tokenAmount: Math.abs(Number(tokensDelta)).toString(),
+        solAmount: Math.abs(Number(solDelta)).toString(),
+        platformFeeLamports: platformFeeLamports.toString(),
+        creatorFeeLamports: creatorFeeLamports.toString(),
       },
     });
   } catch (e: any) {
