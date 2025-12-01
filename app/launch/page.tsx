@@ -114,7 +114,7 @@ export default function LaunchPage() {
   }, [form.liquidityFundingSol, solPriceUSD]);
 
   // Minimum required balance
-  const minRequiredBalance = Math.max(totalCostInSol, 0.3);
+  const minRequiredBalance = Math.max(totalCostInSol, 0.25);
 
   const endpoint = useMemo(() => {
     const urls: Record<SolanaNetwork, string> = {

@@ -76,6 +76,8 @@ export async function POST(req: Request) {
       user: userWallet,
       timestamp: new Date().toISOString(),
       network: network || "devnet",
+      platformFeeLamports: platformFeeLamports || "0",
+      creatorFeeLamports: creatorFeeLamports || "0",
     });
 
     console.log(`✅ Recorded ${mode} transaction for ${userWallet} on ${mintAddress}`);

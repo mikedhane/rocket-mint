@@ -15,6 +15,10 @@ type AdminStats = {
   totalSolCollectedFormatted: string;
   totalPlatformFeesFormatted: string;
   totalCreatorFeesFormatted: string;
+  solPriceUSD: number;
+  totalSolVolumeUSD: number;
+  totalPlatformFeesUSD: number;
+  totalCreatorFeesUSD: number;
   recentLaunches: Array<{
     name: string;
     symbol: string;
@@ -152,9 +156,13 @@ export default function AdminDashboardPage() {
               <h3 className="text-sm font-medium text-zinc-400">Platform Fees</h3>
             </div>
             <p className="text-3xl font-bold text-emerald-400">
-              {stats.totalPlatformFeesFormatted} SOL
+              ${stats.totalPlatformFeesUSD.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </p>
-            <p className="text-xs text-zinc-500 mt-1">1% of trading volume</p>
+            <p className="text-sm text-zinc-500 mt-1">{stats.totalPlatformFeesFormatted} SOL</p>
+            <p className="text-xs text-zinc-600 mt-1">1% of trading volume</p>
           </div>
 
           {/* Creator Fees */}
@@ -166,9 +174,13 @@ export default function AdminDashboardPage() {
               <h3 className="text-sm font-medium text-zinc-400">Creator Fees</h3>
             </div>
             <p className="text-3xl font-bold text-violet-400">
-              {stats.totalCreatorFeesFormatted} SOL
+              ${stats.totalCreatorFeesUSD.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </p>
-            <p className="text-xs text-zinc-500 mt-1">1% to token creators</p>
+            <p className="text-sm text-zinc-500 mt-1">{stats.totalCreatorFeesFormatted} SOL</p>
+            <p className="text-xs text-zinc-600 mt-1">1% to token creators</p>
           </div>
 
           {/* Total Volume */}
@@ -180,9 +192,13 @@ export default function AdminDashboardPage() {
               <h3 className="text-sm font-medium text-zinc-400">Total Volume</h3>
             </div>
             <p className="text-3xl font-bold text-blue-400">
-              {stats.totalSolCollectedFormatted} SOL
+              ${stats.totalSolVolumeUSD.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </p>
-            <p className="text-xs text-zinc-500 mt-1">All-time trading volume</p>
+            <p className="text-sm text-zinc-500 mt-1">{stats.totalSolCollectedFormatted} SOL</p>
+            <p className="text-xs text-zinc-600 mt-1">All-time trading volume</p>
           </div>
 
           {/* Total Tokens */}
@@ -291,28 +307,53 @@ export default function AdminDashboardPage() {
             <div className="space-y-4">
               <div className="flex justify-between items-center pb-3 border-b border-zinc-800">
                 <span className="text-zinc-400">Total SOL Volume</span>
-                <span className="text-xl font-bold">{stats.totalSolCollectedFormatted}</span>
+                <div className="text-right">
+                  <div className="text-xl font-bold">
+                    ${stats.totalSolVolumeUSD.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                  <div className="text-sm text-zinc-500">{stats.totalSolCollectedFormatted} SOL</div>
+                </div>
               </div>
               <div className="flex justify-between items-center pb-3 border-b border-zinc-800">
                 <span className="text-zinc-400">Platform Revenue</span>
-                <span className="text-xl font-bold text-emerald-400">
-                  {stats.totalPlatformFeesFormatted}
-                </span>
+                <div className="text-right">
+                  <div className="text-xl font-bold text-emerald-400">
+                    ${stats.totalPlatformFeesUSD.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                  <div className="text-sm text-zinc-500">{stats.totalPlatformFeesFormatted} SOL</div>
+                </div>
               </div>
               <div className="flex justify-between items-center pb-3 border-b border-zinc-800">
                 <span className="text-zinc-400">Creator Earnings</span>
-                <span className="text-xl font-bold text-violet-400">
-                  {stats.totalCreatorFeesFormatted}
-                </span>
+                <div className="text-right">
+                  <div className="text-xl font-bold text-violet-400">
+                    ${stats.totalCreatorFeesUSD.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                  <div className="text-sm text-zinc-500">{stats.totalCreatorFeesFormatted} SOL</div>
+                </div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-zinc-400">Total Fees Collected</span>
-                <span className="text-xl font-bold">
-                  {(
-                    parseFloat(stats.totalPlatformFeesFormatted) +
-                    parseFloat(stats.totalCreatorFeesFormatted)
-                  ).toFixed(4)}
-                </span>
+                <div className="text-right">
+                  <div className="text-xl font-bold">
+                    ${(stats.totalPlatformFeesUSD + stats.totalCreatorFeesUSD).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                  <div className="text-sm text-zinc-500">
+                    {(parseFloat(stats.totalPlatformFeesFormatted) + parseFloat(stats.totalCreatorFeesFormatted)).toFixed(4)} SOL
+                  </div>
+                </div>
               </div>
             </div>
           </div>

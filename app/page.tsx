@@ -42,6 +42,11 @@ export default function HomePage() {
   const [depositMethod, setDepositMethod] = useState<"crypto" | "card">("crypto");
   const [solPriceUsd, setSolPriceUsd] = useState<number | null>(null);
   const [showComingSoon, setShowComingSoon] = useState(false);
+  const [totalCreatorEarnings, setTotalCreatorEarnings] = useState<{
+    totalSOL: number;
+    totalUSD: number;
+    transactionCount: number;
+  } | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -128,6 +133,9 @@ export default function HomePage() {
     router.push(`/swap/${mintAddress}`);
   };
 
+  const network: SolanaNetwork =
+    (process.env.NEXT_PUBLIC_SOLANA_NETWORK as SolanaNetwork) || "devnet";
+
   // Fetch trending tokens
   useEffect(() => {
     const fetchTrending = async () => {
@@ -143,8 +151,30 @@ export default function HomePage() {
     fetchTrending();
   }, []);
 
-  const network: SolanaNetwork =
-    (process.env.NEXT_PUBLIC_SOLANA_NETWORK as SolanaNetwork) || "devnet";
+  // Fetch total creator earnings across network
+  useEffect(() => {
+    const fetchTotalCreatorEarnings = async () => {
+      try {
+        const res = await fetch(`/api/total-creator-earnings?network=${network}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (data.transactionCount > 0 && solPriceUsd) {
+          setTotalCreatorEarnings({
+            totalSOL: data.totalCreatorFeesSOL,
+            totalUSD: data.totalCreatorFeesSOL * solPriceUsd,
+            transactionCount: data.transactionCount,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch total creator earnings:", error);
+      }
+    };
+
+    if (solPriceUsd) {
+      fetchTotalCreatorEarnings();
+    }
+  }, [network, solPriceUsd]);
 
   const endpoint = useMemo(() => {
     const urls: Record<SolanaNetwork, string> = {
@@ -597,6 +627,34 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+
+          {/* Total Creator Earnings */}
+          {totalCreatorEarnings && totalCreatorEarnings.transactionCount > 0 && (
+            <div>
+              <div className="rounded-2xl border border-violet-800/50 bg-linear-to-br from-violet-950/60 to-zinc-950/60 p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-medium text-violet-400">Total Creator Earnings on Network</h3>
+                  <span className="text-xs text-zinc-500 bg-zinc-900 px-2 py-1 rounded">
+                    {totalCreatorEarnings.transactionCount.toLocaleString()} {totalCreatorEarnings.transactionCount === 1 ? 'trade' : 'trades'}
+                  </span>
+                </div>
+                <div className="text-5xl font-bold text-white mb-2">
+                  ${totalCreatorEarnings.totalUSD.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+                <p className="text-sm text-zinc-400 mb-4">
+                  {totalCreatorEarnings.totalSOL.toFixed(6)} SOL paid to all creators
+                </p>
+                <div className="pt-4 border-t border-violet-900/30">
+                  <p className="text-xs text-zinc-500 leading-relaxed">
+                    💰 Every token creator earns 1% on every buy and sell transaction. This creates sustainable passive income for builders and incentivizes quality token launches on Rocket-Mint.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Create & Mint */}
           <div>

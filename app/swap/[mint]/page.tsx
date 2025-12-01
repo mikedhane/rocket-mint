@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import {
@@ -25,7 +25,7 @@ import {
   formatTokenAmount,
 } from "@/lib/bondingCurve";
 import BottomNav from "@/components/BottomNav";
-import RecentTransactions from "@/components/RecentTransactions";
+import RecentTransactions, { RecentTransactionsRef } from "@/components/RecentTransactions";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 type TokenData = {
@@ -58,6 +58,9 @@ export default function SwapPage() {
   const [error, setError] = useState("");
   const [transactions, setTransactions] = useState<any[]>([]);
 
+  // Ref for RecentTransactions component to trigger manual refresh
+  const recentTransactionsRef = useRef<RecentTransactionsRef>(null);
+
   // Graduation target state
   const [graduationTarget, setGraduationTarget] = useState<{
     targetUSD: number;
@@ -82,6 +85,13 @@ export default function SwapPage() {
 
   // Token holder count
   const [holderCount, setHolderCount] = useState<number>(0);
+
+  // Creator earnings state
+  const [creatorEarnings, setCreatorEarnings] = useState<{
+    totalSOL: number;
+    totalUSD: number;
+    transactionCount: number;
+  } | null>(null);
 
   const network: SolanaNetwork =
     (tokenData?.network as SolanaNetwork) || "devnet";
@@ -363,6 +373,39 @@ export default function SwapPage() {
     const interval = setInterval(fetchHolderCount, 30000);
     return () => clearInterval(interval);
   }, [mint, network]);
+
+  // Fetch creator earnings
+  useEffect(() => {
+    if (!mint || !graduationTarget) {
+      setCreatorEarnings(null);
+      return;
+    }
+
+    const fetchCreatorEarnings = async () => {
+      try {
+        const res = await fetch(`/api/creator-earnings?mintAddress=${mint}`);
+        if (res.ok) {
+          const data = await res.json();
+          setCreatorEarnings({
+            totalSOL: data.totalCreatorFeesSOL,
+            totalUSD: data.totalCreatorFeesSOL * graduationTarget.solPriceUSD,
+            transactionCount: data.transactionCount,
+          });
+        } else {
+          setCreatorEarnings(null);
+        }
+      } catch (err) {
+        console.error("Error fetching creator earnings:", err);
+        setCreatorEarnings(null);
+      }
+    };
+
+    fetchCreatorEarnings();
+
+    // Refresh creator earnings every 30 seconds
+    const interval = setInterval(fetchCreatorEarnings, 30000);
+    return () => clearInterval(interval);
+  }, [mint, graduationTarget]);
 
   // Calculate current price first (needed for swap preview)
   const currentPrice = useMemo(() => {
@@ -696,6 +739,9 @@ export default function SwapPage() {
             network,
           }),
         });
+
+        // Immediately refresh recent transactions display
+        recentTransactionsRef.current?.refresh();
       } catch (recordErr) {
         console.error("Failed to record transaction:", recordErr);
         // Don't fail the whole swap if recording fails
@@ -972,6 +1018,30 @@ export default function SwapPage() {
           </div>
         </div>
 
+        {/* Creator Earnings Card */}
+        {creatorEarnings && creatorEarnings.transactionCount > 0 && (
+          <div className="rounded-2xl border border-violet-800/50 bg-linear-to-br from-violet-950/60 to-zinc-950/60 p-6 mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-violet-400">Creator Earnings (1% Fee)</h3>
+              <span className="text-xs text-zinc-500 bg-zinc-900 px-2 py-1 rounded">
+                {creatorEarnings.transactionCount} {creatorEarnings.transactionCount === 1 ? 'trade' : 'trades'}
+              </span>
+            </div>
+            <div className="text-4xl font-bold text-white mb-1">
+              ${creatorEarnings.totalUSD.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </div>
+            <p className="text-sm text-zinc-400">
+              {creatorEarnings.totalSOL.toFixed(6)} SOL earned from trading fees
+            </p>
+            <p className="text-xs text-zinc-500 mt-3 pt-3 border-t border-violet-900/30">
+              💰 Creators earn 1% on every buy and sell transaction. This creates passive income for token creators.
+            </p>
+          </div>
+        )}
+
         {/* User Holdings Card */}
         {connected && userTokenBalance > 0 && (
           <div className="rounded-2xl border border-emerald-800/50 bg-linear
@@ -1227,9 +1297,28 @@ export default function SwapPage() {
 
           {/* Input */}
           <div className="mb-4">
-            <label className="block text-sm text-zinc-400 mb-2">
-              USD Amount
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm text-zinc-400">
+                USD Amount
+              </label>
+              {swapMode === "sell" && userTokenBalance > 0 && currentPrice && graduationTarget && curveState && (
+                <button
+                  onClick={() => {
+                    // Calculate max sellable tokens:
+                    // User can only sell the minimum of their balance or what the curve can buy back
+                    const curveLiquidity = Number(curveState.tokensSold) / 1_000_000; // Convert from raw to display tokens
+                    const maxSellableTokens = Math.min(userTokenBalance, curveLiquidity);
+
+                    // Calculate USD value
+                    const maxUSD = (maxSellableTokens * currentPrice * graduationTarget.solPriceUSD) / 1000;
+                    setInputAmount(maxUSD.toFixed(2));
+                  }}
+                  className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold transition"
+                >
+                  MAX
+                </button>
+              )}
+            </div>
             <input
               type="number"
               value={inputAmount}
@@ -1243,6 +1332,11 @@ export default function SwapPage() {
             />
             <p className={`text-xs mt-1 ${!isAmountValid && inputAmount ? "text-red-400" : "text-zinc-500"}`}>
               Minimum: {graduationTarget ? `$${(0.04 * graduationTarget.solPriceUSD).toFixed(2)}` : "$10"}
+              {swapMode === "sell" && userTokenBalance > 0 && (
+                <span className="ml-2 text-zinc-500">
+                  • Balance: {userTokenBalance.toLocaleString()} {tokenData.symbol}
+                </span>
+              )}
             </p>
           </div>
 
@@ -1261,15 +1355,37 @@ export default function SwapPage() {
                       : `${lamportsToSol((swapPreview as any).solReceived)} SOL`}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Platform Fee:</span>
-                <span>
-                  {graduationTarget
-                    ? `$${(Number(lamportsToSol(swapPreview.platformFee)) * graduationTarget.solPriceUSD).toFixed(2)}`
-                    : `${lamportsToSol(swapPreview.platformFee)} SOL`}
-                </span>
+              <div className="border-t border-zinc-800 pt-2 space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="text-zinc-500">Platform Fee (1%):</span>
+                  <span className="text-zinc-400">
+                    {graduationTarget
+                      ? `$${(Number(lamportsToSol(swapPreview.platformFee)) * graduationTarget.solPriceUSD).toFixed(2)}`
+                      : `${lamportsToSol(swapPreview.platformFee)} SOL`}
+                  </span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-zinc-500">Creator Fee (1%):</span>
+                  <span className="text-zinc-400">
+                    {graduationTarget
+                      ? `$${(Number(lamportsToSol(swapPreview.creatorFee)) * graduationTarget.solPriceUSD).toFixed(2)}`
+                      : `${lamportsToSol(swapPreview.creatorFee)} SOL`}
+                  </span>
+                </div>
+                <div className="flex justify-between text-xs pt-1 border-t border-zinc-800">
+                  <span className="text-zinc-500">Total Fees (2%):</span>
+                  <span className="text-zinc-400 font-semibold">
+                    {graduationTarget
+                      ? `$${(
+                          (Number(lamportsToSol(swapPreview.platformFee)) +
+                           Number(lamportsToSol(swapPreview.creatorFee))) *
+                          graduationTarget.solPriceUSD
+                        ).toFixed(2)}`
+                      : `${(Number(lamportsToSol(swapPreview.platformFee)) + Number(lamportsToSol(swapPreview.creatorFee))).toFixed(6)} SOL`}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between pt-2 border-t border-zinc-800">
                 <span className="text-zinc-400">Avg Price:</span>
                 <span>
                   {graduationTarget
@@ -1277,6 +1393,9 @@ export default function SwapPage() {
                     : `${swapPreview.avgPrice.toFixed(9)} SOL`}
                 </span>
               </div>
+              <p className="text-xs text-zinc-500 pt-2 border-t border-zinc-800">
+                💡 Trading fees (2% total) are deducted from your transaction. These fees support the platform and token creators.
+              </p>
             </div>
           )}
 
@@ -1332,6 +1451,7 @@ export default function SwapPage() {
         {/* Recent Transactions */}
         <div className="mt-6">
           <RecentTransactions
+            ref={recentTransactionsRef}
             mintAddress={mint}
             solPriceUSD={graduationTarget?.solPriceUSD || 137.79}
           />

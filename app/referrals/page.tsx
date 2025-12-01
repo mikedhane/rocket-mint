@@ -103,7 +103,7 @@ export default function ReferralsPage() {
   if (!publicKey) {
     return (
       <>
-        <main className="min-h-screen bg-gradient-to-b from-black to-zinc-900 text-white px-4 py-8 pb-24">
+        <main className="min-h-screen bg-linear-to-b from-black to-zinc-900 text-white px-4 py-8 pb-24">
           <div className="max-w-md mx-auto text-center mt-20">
             <Gift className="w-20 h-20 mx-auto mb-4 text-violet-500" />
             <h2 className="text-2xl font-bold mb-2">Connect Your Wallet</h2>
@@ -119,13 +119,13 @@ export default function ReferralsPage() {
 
   return (
     <>
-      <main className="min-h-screen bg-gradient-to-b from-black to-zinc-900 text-white px-4 py-8 pb-24">
+      <main className="min-h-screen bg-linear-to-b from-black to-zinc-900 text-white px-4 py-8 pb-24">
         <div className="max-w-md mx-auto">
           {/* Lifetime Rewards Card */}
           <div className="mb-8 flex items-center justify-center">
             <div className="flex items-center gap-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl px-6 py-4">
               <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-violet-500/50 overflow-hidden">
+                <div className="w-16 h-16 bg-linear-to-br from-violet-600 to-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-violet-500/50 overflow-hidden">
                   {avatarUrl ? (
                     <img src={avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
                   ) : (
@@ -156,7 +156,7 @@ export default function ReferralsPage() {
               <div className="flex flex-col items-center">
                 <div className="text-violet-400 font-bold text-lg mb-2">35%</div>
                 <div
-                  className="w-16 bg-gradient-to-t from-violet-600 to-violet-500 rounded-lg transition-all duration-700 ease-out"
+                  className="w-16 bg-linear-to-t from-violet-600 to-violet-500 rounded-lg transition-all duration-700 ease-out"
                   style={{ height: showBar1 ? '128px' : '0px' }}
                 ></div>
               </div>
@@ -164,7 +164,7 @@ export default function ReferralsPage() {
               <div className="flex flex-col items-center">
                 <div className="text-violet-400 font-bold text-lg mb-2">20%</div>
                 <div
-                  className="w-16 bg-gradient-to-t from-violet-600 to-violet-500 rounded-lg transition-all duration-700 ease-out"
+                  className="w-16 bg-linear-to-t from-violet-600 to-violet-500 rounded-lg transition-all duration-700 ease-out"
                   style={{ height: showBar2 ? '96px' : '0px' }}
                 ></div>
               </div>
@@ -172,7 +172,7 @@ export default function ReferralsPage() {
               <div className="flex flex-col items-center">
                 <div className="text-violet-400 font-bold text-lg mb-2">5%</div>
                 <div
-                  className="w-16 bg-gradient-to-t from-violet-600 to-violet-500 rounded-lg transition-all duration-700 ease-out"
+                  className="w-16 bg-linear-to-t from-violet-600 to-violet-500 rounded-lg transition-all duration-700 ease-out"
                   style={{ height: showBar3 ? '64px' : '0px' }}
                 ></div>
               </div>
@@ -266,7 +266,7 @@ export default function ReferralsPage() {
           {/* Invite Button */}
           <button
             onClick={shareReferralLink}
-            className="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold py-4 rounded-xl transition flex items-center justify-center gap-2"
+            className="w-full bg-linear-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold py-4 rounded-xl transition flex items-center justify-center gap-2"
           >
             <Share2 className="w-5 h-5" />
             Invite Friends

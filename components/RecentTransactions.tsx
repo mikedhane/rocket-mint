@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 
 type Transaction = {
   type: "buy" | "sell";
@@ -10,15 +10,19 @@ type Transaction = {
   timestamp: string;
 };
 
-export default function RecentTransactions({ mintAddress, solPriceUSD }: { mintAddress: string; solPriceUSD: number }) {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+export type RecentTransactionsRef = {
+  refresh: () => Promise<void>;
+};
 
-  useEffect(() => {
-    if (!mintAddress) return;
+const RecentTransactions = forwardRef<RecentTransactionsRef, { mintAddress: string; solPriceUSD: number }>(
+  ({ mintAddress, solPriceUSD }, ref) => {
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
 
     const fetchTransactions = async () => {
+      if (!mintAddress) return;
+
       try {
-        const res = await fetch(`/api/transactions?mintAddress=${mintAddress}&limit=7`);
+        const res = await fetch(`/api/transactions?mintAddress=${mintAddress}&limit=7&_t=${Date.now()}`);
         const data = await res.json();
         if (data.transactions) {
           setTransactions(data.transactions.slice(-7).reverse()); // Get last 7 and reverse to show newest first
@@ -28,13 +32,21 @@ export default function RecentTransactions({ mintAddress, solPriceUSD }: { mintA
       }
     };
 
-    // Fetch immediately
-    fetchTransactions();
+    // Expose refresh function to parent
+    useImperativeHandle(ref, () => ({
+      refresh: fetchTransactions
+    }));
 
-    // Refresh every 3 seconds
-    const interval = setInterval(fetchTransactions, 5000);
-    return () => clearInterval(interval);
-  }, [mintAddress]);
+    useEffect(() => {
+      if (!mintAddress) return;
+
+      // Fetch immediately
+      fetchTransactions();
+
+      // Refresh every 5 seconds
+      const interval = setInterval(fetchTransactions, 5000);
+      return () => clearInterval(interval);
+    }, [mintAddress]);
 
   if (transactions.length === 0) {
     return (
@@ -146,4 +158,8 @@ export default function RecentTransactions({ mintAddress, solPriceUSD }: { mintA
       </div>
     </div>
   );
-}
+});
+
+RecentTransactions.displayName = "RecentTransactions";
+
+export default RecentTransactions;
