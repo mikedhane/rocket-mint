@@ -67,7 +67,7 @@ export async function POST(req: Request) {
     const db = getDb();
 
     // Record transaction in history for price chart
-    await db.collection("transactions").add({
+    const transactionDoc = {
       mintAddress,
       type: mode, // "buy" or "sell"
       price: price, // Price in SOL per token
@@ -78,9 +78,12 @@ export async function POST(req: Request) {
       network: network || "devnet",
       platformFeeLamports: platformFeeLamports || "0",
       creatorFeeLamports: creatorFeeLamports || "0",
-    });
+    };
+
+    await db.collection("transactions").add(transactionDoc);
 
     console.log(`✅ Recorded ${mode} transaction for ${userWallet} on ${mintAddress}`);
+    console.log(`📝 Transaction data:`, JSON.stringify(transactionDoc, null, 2));
 
     // Distribute referral commissions based on trading fees
     const platformFee = BigInt(platformFeeLamports || "0");

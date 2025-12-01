@@ -31,7 +31,11 @@ export async function GET(request: NextRequest) {
 
     const snapshot = await query.get();
 
+    console.log(`🔍 Fetching transactions for mintAddress: ${mintAddress}`);
+    console.log(`📊 Found ${snapshot.size} transactions`);
+
     if (snapshot.empty) {
+      console.log(`⚠️ No transactions found for ${mintAddress}`);
       return NextResponse.json({ transactions: [] });
     }
 
