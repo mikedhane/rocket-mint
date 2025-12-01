@@ -502,11 +502,12 @@ export default function LaunchPage() {
           await connection.getLatestBlockhash();
         tx1.recentBlockhash = blockhash1;
 
-        // Mint keypair must sign
-        tx1.partialSign(mint);
-
         setStatus("🔐 Awaiting signature for mint creation...");
-        const signed1 = await signTransaction(tx1);
+        // Phantom wallet signs first (per Phantom security guidelines)
+        let signed1 = await signTransaction(tx1);
+
+        // Additional signers sign afterward
+        signed1.partialSign(mint);
 
         setStatus("📤 Sending transaction 1/3...");
         const sig1 = await connection.sendRawTransaction(signed1.serialize(), {

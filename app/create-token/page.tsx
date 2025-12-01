@@ -154,11 +154,12 @@ export default function CreateTokenPage() {
       tx.feePayer = payer;
       tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
 
-      // Partially sign with mint keypair
-      tx.partialSign(mint);
-
       setStatus("Requesting wallet signature…");
-      const signedTx = await signTransaction(tx);
+      // Phantom wallet signs first (per Phantom security guidelines)
+      let signedTx = await signTransaction(tx);
+
+      // Additional signers sign afterward
+      signedTx.partialSign(mint);
 
       setStatus("Sending transaction…");
       const sig = await connection.sendRawTransaction(signedTx.serialize());
