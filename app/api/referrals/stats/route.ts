@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebaseAdmin";
+import { getDb } from "@/lib/firebaseAdmin";
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,6 +9,8 @@ export async function GET(request: NextRequest) {
     if (!wallet) {
       return NextResponse.json({ error: "Wallet address required" }, { status: 400 });
     }
+
+    const db = getDb();
 
     // Get user's referral data
     const userRef = db.collection("referrals").doc(wallet);

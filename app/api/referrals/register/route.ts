@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebaseAdmin";
+import { getDb } from "@/lib/firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,6 +9,8 @@ export async function POST(request: NextRequest) {
     if (!wallet) {
       return NextResponse.json({ error: "Wallet address required" }, { status: 400 });
     }
+
+    const db = getDb();
 
     // Check if user already has a referrer
     const userRef = db.collection("referrals").doc(wallet);
@@ -77,7 +80,7 @@ export async function POST(request: NextRequest) {
     // Update referrer's level1
     const referrerRef = db.collection("referrals").doc(referrerWallet);
     await referrerRef.update({
-      level1: db.FieldValue.arrayUnion(wallet),
+      level1: FieldValue.arrayUnion(wallet),
     });
 
     // Get referrer's referrer for level2
@@ -87,7 +90,7 @@ export async function POST(request: NextRequest) {
     if (referrerData?.referrer) {
       const level2Ref = db.collection("referrals").doc(referrerData.referrer);
       await level2Ref.update({
-        level2: db.FieldValue.arrayUnion(wallet),
+        level2: FieldValue.arrayUnion(wallet),
       });
 
       // Get level2's referrer for level3
@@ -97,7 +100,7 @@ export async function POST(request: NextRequest) {
       if (level2Data?.referrer) {
         const level3Ref = db.collection("referrals").doc(level2Data.referrer);
         await level3Ref.update({
-          level3: db.FieldValue.arrayUnion(wallet),
+          level3: FieldValue.arrayUnion(wallet),
         });
       }
     }

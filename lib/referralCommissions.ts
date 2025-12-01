@@ -1,4 +1,5 @@
-import { db } from "@/lib/firebaseAdmin";
+import { getDb } from "@/lib/firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
 
 interface CommissionResult {
   level1: number;
@@ -25,6 +26,8 @@ export async function distributeReferralCommissions(
   };
 
   try {
+    const db = getDb();
+
     // Get user's referral data
     const userRef = db.collection("referrals").doc(userWallet);
     const userDoc = await userRef.get();
@@ -44,8 +47,8 @@ export async function distributeReferralCommissions(
 
       const level1Ref = db.collection("referrals").doc(level1Wallet);
       await level1Ref.update({
-        totalEarned: db.FieldValue.increment(level1Commission),
-        level1Earnings: db.FieldValue.increment(level1Commission),
+        totalEarned: FieldValue.increment(level1Commission),
+        level1Earnings: FieldValue.increment(level1Commission),
       });
 
       // Get level 1's referrer for level 2
@@ -60,8 +63,8 @@ export async function distributeReferralCommissions(
 
         const level2Ref = db.collection("referrals").doc(level2Wallet);
         await level2Ref.update({
-          totalEarned: db.FieldValue.increment(level2Commission),
-          level2Earnings: db.FieldValue.increment(level2Commission),
+          totalEarned: FieldValue.increment(level2Commission),
+          level2Earnings: FieldValue.increment(level2Commission),
         });
 
         // Get level 2's referrer for level 3
@@ -76,8 +79,8 @@ export async function distributeReferralCommissions(
 
           const level3Ref = db.collection("referrals").doc(level3Wallet);
           await level3Ref.update({
-            totalEarned: db.FieldValue.increment(level3Commission),
-            level3Earnings: db.FieldValue.increment(level3Commission),
+            totalEarned: FieldValue.increment(level3Commission),
+            level3Earnings: FieldValue.increment(level3Commission),
           });
         }
       }
