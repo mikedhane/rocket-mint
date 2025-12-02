@@ -62,7 +62,7 @@ export async function decryptPrivateKey(encryptedBase64: string): Promise<Uint8A
 
     // Convert the decrypted bytes directly to Uint8Array for Solana keypair
     // Note: KMS returns the raw bytes we encrypted (which were already decoded from base64)
-    const privateKey = new Uint8Array(result.plaintext);
+    const privateKey = new Uint8Array(Buffer.from(result.plaintext as Uint8Array));
 
     console.log(`[KMS] Decryption successful`);
 
