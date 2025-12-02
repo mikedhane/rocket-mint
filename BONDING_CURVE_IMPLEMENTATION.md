@@ -20,8 +20,8 @@ Your Rocket-Mint platform now has a **complete bonding curve token swap system**
 
 ### **2. Token Launch Flow** (Updated `app/launch/page.tsx`)
 When a user creates a token:
-- ✅ **80%** of tokens allocated to bonding curve reserve
-- ✅ **20%** of tokens allocated to creator
+- ✅ **90%** of tokens allocated to bonding curve reserve
+- ✅ **10%** of tokens allocated to creator
 - ✅ Reserve wallet (Keypair) created automatically
 - ✅ Bonding curve configuration stored in Firestore
 - ✅ Initial curve state tracked (tokens remaining, sold, SOL collected)
