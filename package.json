@@ -1,6 +1,6 @@
 {
   "name": "thunder",
-  "version": "1.0.30",
+  "version": "1.0.38",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,6 +10,7 @@
     "deploy": "./scripts/deploy.sh"
   },
   "dependencies": {
+    "@google-cloud/kms": "^5.2.1",
     "@metaplex-foundation/mpl-token-metadata": "^2.13.0",
     "@raydium-io/raydium-sdk-v2": "^0.2.30-alpha",
     "@solana/spl-token": "^0.4.14",

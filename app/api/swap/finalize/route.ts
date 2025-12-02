@@ -8,6 +8,7 @@ import {
   Keypair,
   Transaction,
 } from "@solana/web3.js";
+import { decryptPrivateKey, isKeyEncrypted } from "@/lib/kmsEncryption";
 
 type SolanaNetwork = "devnet" | "mainnet-beta" | "testnet";
 
@@ -49,10 +50,29 @@ export async function POST(req: Request) {
       );
     }
 
-    // Decode reserve wallet private key
-    const reserveSecretKey = Uint8Array.from(
-      Buffer.from(data.reservePrivateKey, "base64")
-    );
+    // Decrypt reserve wallet private key using Google Cloud KMS
+    let reserveSecretKey: Uint8Array;
+
+    if (isKeyEncrypted(data)) {
+      // New encrypted key - decrypt with KMS
+      try {
+        reserveSecretKey = await decryptPrivateKey(data.reservePrivateKey);
+        console.log("[KMS] Successfully decrypted reserve private key for swap finalization");
+      } catch (error: any) {
+        console.error("[KMS] Failed to decrypt private key:", error.message);
+        return NextResponse.json(
+          { error: `Failed to decrypt private key: ${error.message}` },
+          { status: 500 }
+        );
+      }
+    } else {
+      // Legacy unencrypted key - decode directly from base64
+      console.warn("[KMS] Using legacy unencrypted private key - should be migrated to KMS");
+      reserveSecretKey = Uint8Array.from(
+        Buffer.from(data.reservePrivateKey, "base64")
+      );
+    }
+
     const reserveWallet = Keypair.fromSecretKey(reserveSecretKey);
 
     // Get RPC endpoint

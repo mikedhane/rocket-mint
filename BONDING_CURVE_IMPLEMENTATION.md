@@ -79,13 +79,35 @@ On every swap:
 
 ## 🔐 Security Notes
 
-**IMPORTANT**: The reserve wallet private key is currently stored as base64 in Firestore.
+**Reserve Wallet Private Keys** are now secured using **Google Cloud KMS (Key Management Service)**:
 
-**For Production:**
-- ⚠️ Encrypt the private key before storing
-- ⚠️ Use environment variables for encryption keys
-- ⚠️ Consider using a key management service (AWS KMS, Google Cloud KMS)
-- ⚠️ Or use a program (smart contract) to hold the reserve
+✅ **Encryption**: Private keys are encrypted with Google Cloud KMS before storing in Firestore
+- Uses FIPS 140-2 Level 3 Hardware Security Modules (HSMs)
+- Keys never leave Google's secure infrastructure unencrypted
+- Industry-standard AES-256 encryption
+
+✅ **Implementation**:
+- `lib/kmsEncryption.ts` - Encryption/decryption helper functions
+- `app/api/record-launch/route.ts` - Encrypts keys during token creation
+- `app/api/swap/route.ts` - Decrypts keys for swap transactions
+- `app/api/swap/finalize/route.ts` - Decrypts keys for transaction finalization
+
+✅ **Metadata Tracking**:
+- `encryptionMethod: "gcp-kms"` - Identifies encrypted keys
+- `encryptionKeyVersion: 1` - Tracks encryption key version
+- Backward compatible with legacy unencrypted keys
+
+✅ **KMS Configuration**:
+- Project: `rocket-mint`
+- Location: `global`
+- Key Ring: `rocket-mint-keys`
+- Encryption Key: `reserve-wallet-key`
+
+✅ **Cost**: ~$2/year ($0.06/month per key + $0.03 per 10,000 operations)
+
+**Testing**: Run `npx tsx scripts/test-kms.ts` to verify encryption/decryption flow
+
+
 
 ## 🧪 Testing the Flow
 

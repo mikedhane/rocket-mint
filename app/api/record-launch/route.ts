@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/firebaseAdmin";
+import { encryptPrivateKey } from "@/lib/kmsEncryption";
 
 // Optional: handy to verify the route exists in your browser
 export async function GET() {
@@ -46,6 +47,21 @@ export async function POST(req: Request) {
       );
     }
 
+    // Encrypt the reserve private key using Google Cloud KMS
+    let encryptedPrivateKey = null;
+    if (reservePrivateKey) {
+      try {
+        encryptedPrivateKey = await encryptPrivateKey(reservePrivateKey);
+        console.log("[KMS] Successfully encrypted reserve private key for token:", mintAddress);
+      } catch (error: any) {
+        console.error("[KMS] Failed to encrypt private key:", error.message);
+        return NextResponse.json(
+          { error: `Failed to encrypt private key: ${error.message}` },
+          { status: 500 }
+        );
+      }
+    }
+
     const doc = {
       mintAddress,
       name,
@@ -65,7 +81,9 @@ export async function POST(req: Request) {
       twitter: twitter || null,
       // Bonding curve data
       curveReserveWallet: curveReserveWallet || null,
-      reservePrivateKey: reservePrivateKey || null, // TODO: Encrypt this in production!
+      reservePrivateKey: encryptedPrivateKey, // Now encrypted with Google Cloud KMS!
+      encryptionMethod: encryptedPrivateKey ? "gcp-kms" : null,
+      encryptionKeyVersion: encryptedPrivateKey ? 1 : null,
       bondingCurve: bondingCurve || null,
       curveState: curveState || null,
       createdAt: new Date().toISOString(),
