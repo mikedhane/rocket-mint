@@ -152,6 +152,10 @@ export async function GET(request: Request) {
         if (bondingCurve.k && bondingCurve.n && !isNaN(bondingCurve.k) && !isNaN(bondingCurve.n)) {
           currentPrice = getCurrentPrice(bondingCurve, tokensSold);
 
+          // Convert from SOL per token to USD per token
+          // The bonding curve formula returns price in SOL, so multiply by SOL price
+          currentPrice = currentPrice * solPriceUSD;
+
           // Check if result is valid
           if (isNaN(currentPrice) || !isFinite(currentPrice)) {
             currentPrice = 0;

@@ -172,17 +172,43 @@ lib/
 └── bondingCurve.ts              # Bonding curve calculations (new)
 ```
 
+## 🎓 Automatic Liquidity Pool Graduation
+
+When a token reaches **$1M USD in collected SOL** (calculated dynamically based on current SOL/USD price), it automatically "graduates" and a **Raydium AMM liquidity pool** is created:
+
+### **How It Works:**
+1. ✅ Token hits graduation threshold ($1M USD worth of SOL)
+2. ✅ Bonding curve marked as `graduated: true` in Firestore
+3. ✅ `/api/create-pool` endpoint triggered asynchronously
+4. ✅ All remaining tokens + all collected SOL moved to Raydium pool
+5. ✅ LP tokens automatically **burned** (liquidity permanently locked)
+6. ✅ Pool ID saved to Firestore for frontend display
+7. ✅ Users can now trade on Raydium with no platform intermediary
+
+### **Why This Matters:**
+- **Trustless**: Once graduated, liquidity is permanently locked in a DEX
+- **No rugpull risk**: Platform owner cannot withdraw liquidity
+- **Standard trading**: Token trades on Raydium like any other SPL token
+- **Professional**: Matches how pump.fun and other successful platforms work
+
+### **Technical Implementation:**
+- `lib/raydiumLP.ts` - Raydium pool creation and LP burning logic
+- `app/api/create-pool/route.ts` - Async pool creation endpoint
+- `app/api/swap/route.ts` - Triggers pool creation on graduation
+- Uses **Raydium SDK v2** for pool creation
+- Supports both devnet and mainnet-beta
+
 ## 🚀 What's Next?
 
 **Potential Enhancements:**
-1. **Add liquidity pool graduation**: When curve completes, auto-create Raydium pool
-2. **Charts**: Add price charts using on-chain data
-3. **Social features**: Comments, likes, trending tokens
-4. **Multiple bonding curves**: Exponential, logarithmic options
-5. **Token-2022 support**: Use Token Extensions for extra features
-6. **Anti-bot measures**: Add limits, captcha for fairness
-7. **Leaderboard**: Top traders, biggest gains
-8. **Notifications**: Alert users of swaps on their tokens
+1. **Charts**: Add price charts using on-chain data
+2. **Social features**: Comments, likes, trending tokens
+3. **Multiple bonding curves**: Exponential, logarithmic options
+4. **Token-2022 support**: Use Token Extensions for extra features
+5. **Anti-bot measures**: Add limits, captcha for fairness
+6. **Leaderboard**: Top traders, biggest gains
+7. **Notifications**: Alert users of swaps on their tokens
+8. **Graduated tokens UI**: Show "Trade on Raydium" button for graduated tokens
 
 ## 🎉 You're Done!
 

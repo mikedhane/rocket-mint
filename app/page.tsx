@@ -476,6 +476,18 @@ export default function HomePage() {
               </button>
             )}
           </div>
+
+          {/* Promotional Banner */}
+          <Link
+            href="/launch"
+            className="block mt-6 rounded-2xl overflow-hidden border border-violet-600/30 hover:border-violet-600 transition-all hover:scale-[1.02] transform duration-200"
+          >
+            <img
+              src="/promo-banner.png"
+              alt="Make meme coins for $25"
+              className="w-full h-auto object-cover"
+            />
+          </Link>
         </div>
       </header>
 

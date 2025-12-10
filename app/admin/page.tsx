@@ -90,7 +90,7 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-b from-zinc-950 to-zinc-900 text-white flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600 mb-4"></div>
           <p className="text-zinc-400">Loading dashboard...</p>
@@ -101,7 +101,7 @@ export default function AdminDashboardPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white flex items-center justify-center p-4">
+      <div className="min-h-screen bg-linear-to-b from-zinc-950 to-zinc-900 text-white flex items-center justify-center p-4">
         <div className="text-center">
           <p className="text-red-400 mb-4">{error}</p>
           <button
@@ -118,7 +118,7 @@ export default function AdminDashboardPage() {
   if (!stats) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-white">
+    <div className="min-h-screen bg-linear-to-b from-zinc-950 to-zinc-900 text-white">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
@@ -238,7 +238,7 @@ export default function AdminDashboardPage() {
                     </code>
                     <button
                       onClick={copyWalletAddress}
-                      className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition flex-shrink-0"
+                      className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition shrink-0"
                     >
                       {copiedWallet ? "✓ Copied!" : "Copy"}
                     </button>
@@ -386,7 +386,7 @@ export default function AdminDashboardPage() {
                       <td className="py-3 px-4 text-zinc-300">{launch.symbol}</td>
                       <td className="py-3 px-4">
                         {launch.graduated ? (
-                          <span className="px-2 py-1 text-xs font-semibold bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-full">
+                          <span className="px-2 py-1 text-xs font-semibold bg-linear-to-r from-yellow-500 to-orange-500 text-white rounded-full">
                             🎓 Graduated
                           </span>
                         ) : (

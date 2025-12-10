@@ -399,6 +399,16 @@ export async function POST(req: Request) {
       updateData.graduated = true;
       updateData.graduatedAt = new Date().toISOString();
       console.log(`🎓 Token ${mintAddress} has GRADUATED! Creating liquidity pool...`);
+
+      // Trigger pool creation asynchronously (don't wait for it)
+      // This is a fire-and-forget request - pool creation happens in background
+      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/create-pool`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mintAddress, network }),
+      }).catch(err => {
+        console.error(`[Graduation] Failed to trigger pool creation: ${err.message}`);
+      });
     }
 
     await db.collection("launches").doc(doc.id).update(updateData);
