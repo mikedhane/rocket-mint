@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ transactions: [] });
     }
 
-    // Sort by timestamp in memory
+    // Sort by timestamp in memory (newest first)
     const transactions = snapshot.docs
       .map((doc) => ({
         id: doc.id,
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       .sort((a: any, b: any) => {
         const aTime = new Date(a.timestamp).getTime();
         const bTime = new Date(b.timestamp).getTime();
-        return aTime - bTime;
+        return bTime - aTime; // Descending order (newest first)
       })
       .slice(0, limit);
 
