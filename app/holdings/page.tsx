@@ -7,7 +7,7 @@ import { Connection, PublicKey, LAMPORTS_PER_SOL, Transaction } from "@solana/we
 import { getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
-import { ArrowRight, DollarSign, Send, ArrowDownToLine } from "lucide-react";
+import { ArrowRight, Send, ArrowDownToLine } from "lucide-react";
 import { APP_VERSION } from "@/lib/version";
 
 type SolanaNetwork = "mainnet-beta" | "devnet" | "testnet";
@@ -546,15 +546,6 @@ export default function HoldingsPage() {
               <Send className="w-6 h-6" />
             </div>
             <span className="text-sm font-medium">Send</span>
-          </button>
-          <button
-            onClick={() => alert("💳 Cash and Swaps Coming Soon!\n\nWe're working on adding:\n• Withdraw to bank account\n• Swap tokens\n• More payment options\n\nStay tuned!")}
-            className="flex flex-col items-center gap-2"
-          >
-            <div className="w-14 h-14 rounded-full bg-violet-600 hover:bg-violet-700 transition flex items-center justify-center">
-              <DollarSign className="w-6 h-6" />
-            </div>
-            <span className="text-sm font-medium">Withdraw</span>
           </button>
         </div>
 
